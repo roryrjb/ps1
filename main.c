@@ -31,6 +31,8 @@ int main(void) {
 		exit(EXIT_FAILURE);
 	}
 
+	int not_home = strcmp(getenv("HOME"), cwd);
+
 	git_libgit2_init();
 	git_repository *repo = NULL;
 	git_reference *ref = NULL;
@@ -58,7 +60,9 @@ int main(void) {
 		git_diff_get_stats(&stats, diff);
 		size_t changed = git_diff_stats_files_changed(stats);
 		char *suffix = changed > 0 ? "*" : "";
-		printf("%s (%s%s) $ ", cwd, branch_name, suffix);
+		printf("\033[0;32m[%s\033[0m "
+			   "(%s%s)\033[0;32m]\033[0m\n\033[0;32m$\033[0m ",
+			not_home ? cwd : "~", branch_name, suffix);
 		goto exit;
 	} else {
 		goto fallback;
@@ -66,9 +70,12 @@ int main(void) {
 
 fallback:
 	if (is_repo) {
-		printf("%s (HEAD) $ ", cwd);
+		printf("\033[0;32m[%s\033[0m "
+			   "(HEAD)\033[0;32m]\033[0m\n\033[0;32m$\033[0m ",
+			not_home ? cwd : "~");
 	} else {
-		printf("%s $ ", cwd);
+		printf("\033[0;32m[%s]\033[0m\n\033[0;32m$\033[0m ",
+			not_home ? cwd : "~");
 	}
 exit:
 	exit(EXIT_SUCCESS);
