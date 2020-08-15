@@ -60,8 +60,8 @@ int main(void) {
 		git_diff_get_stats(&stats, diff);
 		size_t changed = git_diff_stats_files_changed(stats);
 		char *suffix = changed > 0 ? "*" : "";
-		printf("\033[0;32m[%s\033[0m "
-			   "(%s%s)\033[0;32m]\033[0m\n\033[0;32m$\033[0m ",
+		printf("\x1B[0;32m[%s\x1B[0m "
+			   "(%s%s)\x1B[0;32m]\x1B[0m\n$ ",
 			not_home ? cwd : "~", branch_name, suffix);
 		goto exit;
 	} else {
@@ -70,12 +70,11 @@ int main(void) {
 
 fallback:
 	if (is_repo) {
-		printf("\033[0;32m[%s\033[0m "
-			   "(HEAD)\033[0;32m]\033[0m\n\033[0;32m$\033[0m ",
+		printf("\x1B[0;32m[%s\x1B[0m "
+			   "(HEAD)\x1B[0;32m]\x1B[0m\n$ ",
 			not_home ? cwd : "~");
 	} else {
-		printf("\033[0;32m[%s]\033[0m\n\033[0;32m$\033[0m ",
-			not_home ? cwd : "~");
+		printf("\x1B[0;32m[%s]\x1B[0m\n$ ", not_home ? cwd : "~");
 	}
 exit:
 	exit(EXIT_SUCCESS);
