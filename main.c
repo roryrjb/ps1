@@ -17,12 +17,14 @@
 #define _XOPEN_SOURCE 700
 
 #include <git2.h>
+#include <regex.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
 int main(void) {
+	regex_t *preg = (regex_t *)malloc(sizeof(regex_t));
 	const char *branch_name = NULL;
 	char cwd[1024];
 
@@ -31,7 +33,27 @@ int main(void) {
 		exit(EXIT_FAILURE);
 	}
 
-	int not_home = strcmp(getenv("HOME"), cwd);
+	char *home = getenv("HOME");
+	char home_regex[1024] = {'\0'};
+	strcat(home_regex, "^");
+	strcat(home_regex, home);
+
+	if (regcomp(preg, home_regex, REG_NOSUB) < 0) {
+		perror("regcomp");
+		exit(EXIT_FAILURE);
+	}
+
+	char dir_string[1024] = {'\0'};
+
+	if (regexec(preg, cwd, 0, NULL, 0) == 0) {
+		dir_string[0] = '~';
+
+		for (int i = (strlen(home)), j = 1; i < strlen(cwd); i++, j++) {
+			dir_string[j] = cwd[i];
+		}
+	} else {
+		strcat(dir_string, cwd);
+	}
 
 	git_libgit2_init();
 	git_repository *repo = NULL;
@@ -60,9 +82,7 @@ int main(void) {
 		git_diff_get_stats(&stats, diff);
 		size_t changed = git_diff_stats_files_changed(stats);
 		char *suffix = changed > 0 ? "*" : "";
-		printf("\x1B[0;32m[%s\x1B[0m "
-			   "(%s%s)\x1B[0;32m]\x1B[0m\n$ ",
-			not_home ? cwd : "~", branch_name, suffix);
+		printf("%s (%s%s)", dir_string, branch_name, suffix);
 		goto exit;
 	} else {
 		goto fallback;
@@ -70,12 +90,12 @@ int main(void) {
 
 fallback:
 	if (is_repo) {
-		printf("\x1B[0;32m[%s\x1B[0m "
-			   "(HEAD)\x1B[0;32m]\x1B[0m\n$ ",
-			not_home ? cwd : "~");
+		printf("%s (HEAD)", dir_string);
 	} else {
-		printf("\x1B[0;32m[%s]\x1B[0m\n$ ", not_home ? cwd : "~");
+		printf("%s", dir_string);
 	}
+
 exit:
+	regfree(preg);
 	exit(EXIT_SUCCESS);
 }

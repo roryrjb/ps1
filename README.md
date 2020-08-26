@@ -12,9 +12,9 @@ It is opinionated and the format is currently hardcoded.
 ## Usage
 
 As it is written in C and is compiled it should be usable in any shell.
-To use in any Bourne descended shells you can simply:
+To use in any Bourne descended shells, for example, you can simply:
 
-    PS1='$(ps1)'
+    PS1='[$(ps1)]\$ '
 
 ## Installation
 
