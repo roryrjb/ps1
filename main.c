@@ -61,8 +61,7 @@ int main(void) {
 
 	int is_repo = 0;
 
-	if (git_repository_open_ext(
-			&repo, cwd, GIT_REPOSITORY_OPEN_NO_SEARCH, NULL) == 0) {
+	if (git_repository_open_ext(&repo, cwd, 0, NULL) == 0) {
 		is_repo = 1;
 		if (git_reference_dwim(&ref, repo, "HEAD")) {
 			goto fallback;
