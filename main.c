@@ -16,14 +16,29 @@
 
 #define _XOPEN_SOURCE 700
 
+#include <getopt.h>
 #include <git2.h>
+#include <libgen.h>
 #include <regex.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-int main(void) {
+int main(int argc, char **argv) {
+	int ch;
+	int dir_basename = 0;
+
+	while ((ch = getopt(argc, argv, "b")) > -1) {
+		switch (ch) {
+		case 'b':
+			dir_basename = 1;
+			break;
+		default:
+			break;
+		}
+	}
+
 	regex_t *preg = (regex_t *)malloc(sizeof(regex_t));
 	const char *branch_name = NULL;
 	char cwd[1024];
@@ -45,7 +60,9 @@ int main(void) {
 
 	char dir_string[1024] = {'\0'};
 
-	if (regexec(preg, cwd, 0, NULL, 0) == 0) {
+	if (dir_basename) {
+		strcat(dir_string, basename(cwd));
+	} else if (regexec(preg, cwd, 0, NULL, 0) == 0) {
 		dir_string[0] = '~';
 
 		for (int i = (strlen(home)), j = 1; i < strlen(cwd); i++, j++) {
