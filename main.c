@@ -1,4 +1,4 @@
-/* ps1 - Copyright (C) 2020 Rory Bradford <roryrjb@gmail.com>
+/* ps1 - Copyright (C) 2020 - 2021 Rory Bradford <roryrjb@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,12 +28,15 @@
 int main(int argc, char **argv) {
 	int ch;
 	int dir_basename = 0;
+	int no_status = 0;
 
-	while ((ch = getopt(argc, argv, "b")) > -1) {
+	while ((ch = getopt(argc, argv, "bn")) > -1) {
 		switch (ch) {
 		case 'b':
 			dir_basename = 1;
 			break;
+		case 'n':
+			no_status = 1;
 		default:
 			break;
 		}
@@ -61,11 +64,16 @@ int main(int argc, char **argv) {
 	char dir_string[1024] = {'\0'};
 
 	if (dir_basename) {
-		strcat(dir_string, basename(cwd));
+		if (strcmp(cwd, home) == 0) {
+			dir_string[0] = '~';
+		} else {
+			strcat(dir_string, basename(cwd));
+		}
 	} else if (regexec(preg, cwd, 0, NULL, 0) == 0) {
 		dir_string[0] = '~';
 
-		for (int i = (strlen(home)), j = 1; i < strlen(cwd); i++, j++) {
+		for (unsigned int i = (strlen(home)), j = 1; i < strlen(cwd);
+			 i++, j++) {
 			dir_string[j] = cwd[i];
 		}
 	} else {
@@ -88,15 +96,19 @@ int main(int argc, char **argv) {
 			goto fallback;
 		}
 
-		git_diff_stats *stats;
-		git_diff *diff;
+		size_t changed = 0;
 
-		if (git_diff_index_to_workdir(&diff, repo, NULL, NULL)) {
-			goto fallback;
+		if (no_status == 0) {
+			git_diff_stats *stats;
+			git_diff *diff;
+
+			if (git_diff_index_to_workdir(&diff, repo, NULL, NULL)) {
+				goto fallback;
+			}
+			git_diff_get_stats(&stats, diff);
+			changed = git_diff_stats_files_changed(stats);
 		}
 
-		git_diff_get_stats(&stats, diff);
-		size_t changed = git_diff_stats_files_changed(stats);
 		char *suffix = changed > 0 ? "*" : "";
 		printf("%s (%s%s)", dir_string, branch_name, suffix);
 		goto exit;
