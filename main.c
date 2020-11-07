@@ -61,11 +61,16 @@ int main(int argc, char **argv) {
 	char dir_string[1024] = {'\0'};
 
 	if (dir_basename) {
-		strcat(dir_string, basename(cwd));
+		if (strcmp(cwd, home) == 0) {
+			dir_string[0] = '~';
+		} else {
+			strcat(dir_string, basename(cwd));
+		}
 	} else if (regexec(preg, cwd, 0, NULL, 0) == 0) {
 		dir_string[0] = '~';
 
-		for (int i = (strlen(home)), j = 1; i < strlen(cwd); i++, j++) {
+		for (unsigned int i = (strlen(home)), j = 1; i < strlen(cwd);
+			 i++, j++) {
 			dir_string[j] = cwd[i];
 		}
 	} else {
