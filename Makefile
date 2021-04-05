@@ -8,8 +8,11 @@ NAME = ps1
 $(NAME): main.o
 	$(CC) $(CFLAGS) -o $(NAME) $< $(LDFLAGS)
 
-install: $(NAME)
-	install -m755 $(NAME) /usr/local/bin/
+ps1.1: ps1.1.scd
+	scdoc < $< > $@
 
+install: $(NAME) ps1.1
+	install -m755 $(NAME) /usr/local/bin/
+	install -m444 ps1.1 /usr/local/man/man1/
 clean:
 	rm -f *.o $(NAME)
