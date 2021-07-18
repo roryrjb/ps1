@@ -12,6 +12,8 @@ ps1.1: ps1.1.scd
 	scdoc < $< > $@
 
 install: $(NAME) ps1.1
+	mkdir -p /usr/local/bin
+	mkdir -p /usr/local/man/man1
 	install -m755 $(NAME) /usr/local/bin/
 	install -m444 ps1.1 /usr/local/man/man1/
 clean:
